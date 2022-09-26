@@ -9,8 +9,7 @@
     "autoload": {
         "psr-4": {
             "Kaadon\\Lock\\": "src"
-        }
-    },
+        },
     "authors": [
         {
             "name": "kaadon",
