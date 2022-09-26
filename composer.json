@@ -1,0 +1,21 @@
+{
+	"name": "kaadon/lock",
+    "type": "library",
+    "description": "kaadon lock for PHP",
+    "keywords": [
+        "lock",
+        "kaadon"
+    ],
+    "autoload": {
+        "psr-4": {
+            "Kaadon\\Lock\\": "src/"
+        }
+    },
+    "authors": [
+        {
+            "name": "kaadon",
+            "email": "kaadon@foxmail.com",
+            "homepage": "https://www.kaadon.com"
+        }
+    ]
+}
