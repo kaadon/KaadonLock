@@ -1,20 +1,26 @@
 {
-	"name": "kaadon/lock",
+    "name": "kaadon/lock",
     "type": "library",
     "description": "kaadon lock for PHP",
     "keywords": [
         "lock",
         "kaadon"
     ],
-    "autoload": {
-        "psr-4": {
-            "Kaadon\\Lock\\": "src"
-        },
+    "homepage": "http://developer.kaadon.com/",
+    "license": "Apache-2.0",
+    "require": {
+        "PHP": ">=7.1"
+    },
     "authors": [
         {
             "name": "kaadon",
             "email": "kaadon@foxmail.com",
             "homepage": "https://www.kaadon.com"
         }
-    ]
+    ],
+    "autoload": {
+        "psr-4": {
+            "Kaadon\\Jwt\\": "src"
+        }
+    }
 }
