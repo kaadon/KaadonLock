@@ -8,7 +8,7 @@
     ],
     "autoload": {
         "psr-4": {
-            "Kaadon\\Lock\\": "src/"
+            "Kaadon\\Lock\\": "src"
         }
     },
     "authors": [
