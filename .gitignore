@@ -1,5 +1,8 @@
-/.vscode
-/vendor
+/vendor/
+/test/
+composer.lock
+.DS_Store
+.idea
 /test/file/test.file
 /test/file/callbacktest.file
 /test/redis/test.redis
