@@ -2,12 +2,14 @@
 
 namespace Kaadon\Lock;
 
-use Kaadon\Lock\KaadonLockException as Exception;
+use Kaadon\Lock\base\KaadonLockException as Exception;
+use Kaadon\Lock\base\BaseLock;
+use Kaadon\Lock\base\LockConst;
 
 /**
- *
+ * RedisLock
  */
-class Redis extends Base
+class Redis extends BaseLock
 {
     /**
      * 等待锁超时时间，单位：毫秒，0为不限制
@@ -36,6 +38,7 @@ class Redis extends Base
      * @var array|null
      */
     public ?array $lockValue;
+
     /**
      * 构造方法
      * @param string $name 锁名称
@@ -43,10 +46,10 @@ class Redis extends Base
      * @param integer $waitTimeout 获得锁等待超时时间，单位：毫秒，0为不限制
      * @param integer $waitSleepTime 获得锁每次尝试间隔，单位：毫秒
      * @param integer $lockExpire 锁超时时间，单位：秒
-     * @throws \Kaadon\Lock\KaadonLockException
+     * @throws \Kaadon\Lock\base\KaadonLockException
      * @throws \RedisException
      */
-    public function __construct(string $name, $params, int $waitTimeout = 0, int $waitSleepTime = 1, int $lockExpire = 3)
+    public function __construct(string $name, $params, int $lockExpire = 3, int $waitTimeout = 0, int $waitSleepTime = 1)
     {
         parent::__construct($name, $params);
         if (!class_exists('\Redis')) {
@@ -63,7 +66,7 @@ class Redis extends Base
             $port = $params['port'] ?? 6379;
             $timeout = $params['timeout'] ?? 0;
             $pconnect = $params['pconnect'] ?? false;
-            $prefx = $params['prefix'] ?? '';
+            $prefix = $params['prefix'] ?? '';
             $this->handler = new \Redis;
             if ($pconnect) {
                 $result = $this->handler->pconnect($host, $port, $timeout);
@@ -82,9 +85,9 @@ class Redis extends Base
                 $this->handler->select($params['select']);
             }
             // 设置前缀
-            $this->handler->setOption(\Redis::OPT_PREFIX, $prefx);
+            $this->handler->setOption(\Redis::OPT_PREFIX, $prefix);
         }
-        $this->guid = uniqid('', true);
+        $this->guid = uniqid('KaadonLock', true);
     }
 
     /**
@@ -180,11 +183,10 @@ class Redis extends Base
      */
     protected function __close(): bool
     {
-        if (is_null($this->handler)) {
-            $result = $this->handler->close();
-            $this->handler = null;
-            return $result;
-        }
-        return true;
+        if (is_null($this->handler)) return true;
+        $result = $this->handler->close();
+        $this->handler = null;
+        return $result;
+
     }
 }

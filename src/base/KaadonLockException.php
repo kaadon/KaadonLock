@@ -1,5 +1,5 @@
 <?php
-namespace Kaadon\Lock;
+namespace Kaadon\Lock\base;
 
 class KaadonLockException extends \Exception
 {

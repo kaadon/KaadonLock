@@ -1,28 +1,33 @@
 {
-    "name": "kaadon/lock",
-    "type": "library",
-    "description": "kaadon lock for PHP",
-    "keywords": [
-        "lock",
-        "kaadon"
-    ],
-    "homepage": "http://developer.kaadon.com/",
-    "license": "Apache-2.0",
-    "require": {
-        "PHP": ">=7.4",
-        "ext-redis": "*",
-        "ext-json": "*"
-    },
-    "authors": [
-        {
-            "name": "kaadon",
-            "email": "kaadon@foxmail.com",
-            "homepage": "https://www.kaadon.com"
-        }
-    ],
-    "autoload": {
-        "psr-4": {
-            "Kaadon\\Lock\\": "src"
-        }
+  "name": "kaadon/lock",
+  "type": "library",
+  "description": "kaadon lock for PHP",
+  "keywords": [
+    "lock",
+    "kaadon"
+  ],
+  "homepage": "http://developer.kaadon.com/",
+  "license": "Apache-2.0",
+  "require": {
+    "PHP": ">=7.4"
+  },
+  "require-dev": {
+    "phpunit/phpunit": "^9.5",
+    "ext-redis": "*",
+    "ext-memcache": "*",
+    "ext-memcached": "*",
+    "ext-json": "*"
+  },
+  "authors": [
+    {
+      "name": "kaadon",
+      "email": "kaadon@foxmail.com",
+      "homepage": "https://www.kaadon.com"
     }
+  ],
+  "autoload": {
+    "psr-4": {
+      "Kaadon\\Lock\\": "src"
+    }
+  }
 }

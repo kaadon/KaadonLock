@@ -1,13 +1,5 @@
 /vendor/
-/test/
 composer.lock
 .DS_Store
 .idea
-/test/file/test.file
-/test/file/callbacktest.file
-/test/redis/test.redis
-/test/redis/callbacktest.redis
-/test/memcache/test.memcache
-/test/memcache/callbacktest.memcache
-/test/memcached/test.memcached
-/test/memcached/callbacktest.memcached
+.phpunit*

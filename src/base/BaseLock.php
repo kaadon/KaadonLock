@@ -1,10 +1,10 @@
 <?php
 
-namespace Kaadon\Lock;
+namespace Kaadon\Lock\base;
 
-use Kaadon\Lock\KaadonLockException as Exception;
 
-abstract class Base
+
+abstract class BaseLock
 {
     /**
      * 锁名称
@@ -55,12 +55,12 @@ abstract class Base
      * @param callback|null $callback 加锁后执行的任务回调，lock方法执行完后自动解锁
      * @param callback|null $concurrentCallback 并发判断回调，如果不为null则在加锁成功后调用。用于判断是否已在之前的并发中处理过该任务。true:已处理，false:未处理
      * @return int
-     * @throws \Kaadon\Lock\KaadonLockException
+     * @throws \Kaadon\Lock\base\KaadonLockException
      */
     public function lock(?callable $callback = null, ?callable $concurrentCallback = null): int
     {
         if ($this->isLocked) {
-            throw new Exception('已经加锁', LockConst::EXCEPTION_ALREADY_LOCKED);
+            throw new KaadonLockException('已经加锁', LockConst::EXCEPTION_ALREADY_LOCKED);
         }
         if ($this->__lock()) {
             $this->isLocked = true;
@@ -89,13 +89,11 @@ abstract class Base
     /**
      * 释放锁
      * @return bool
-     * @throws \Kaadon\Lock\KaadonLockException
+     * @throws \Kaadon\Lock\base\KaadonLockException
      */
     public function unlock(): bool
     {
-        if (!$this->isLocked) {
-            throw new Exception('未加锁', LockConst::EXCEPTION_UNLOCKED);
-        }
+        if (!$this->isLocked) return true;
         if ($this->__unlock()) {
             $this->isLocked = false;
             return true;
@@ -106,12 +104,12 @@ abstract class Base
      * 不阻塞加锁
      * @param callback|null $callback 加锁后执行的任务回调，lock方法执行完后自动解锁
      * @return bool
-     * @throws \Kaadon\Lock\KaadonLockException
+     * @throws \Kaadon\Lock\base\KaadonLockException
      */
     public function unblockLock(?callable $callback = null): bool
     {
         if ($this->isLocked) {
-            throw new Exception('已经加锁', LockConst::EXCEPTION_ALREADY_LOCKED);
+            throw new KaadonLockException('已经加锁', LockConst::EXCEPTION_ALREADY_LOCKED);
         }
         if ($this->__unblockLock()) {
             $this->isLocked = true;
@@ -128,7 +126,7 @@ abstract class Base
     /**
      * 关闭锁对象
      * @return bool
-     * @throws \Kaadon\Lock\KaadonLockException
+     * @throws \Kaadon\Lock\base\KaadonLockException
      */
     public function close(): bool
     {
@@ -163,4 +161,6 @@ abstract class Base
      * @return bool
      */
     protected abstract function __close(): bool;
+
+
 }

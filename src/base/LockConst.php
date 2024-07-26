@@ -1,5 +1,5 @@
 <?php
-namespace Kaadon\Lock;
+namespace Kaadon\Lock\base;
 
 final class LockConst
 {
@@ -42,4 +42,9 @@ final class LockConst
 	 * 未找到扩展
 	 */
 	const EXCEPTION_EXTENSIONS_NOT_FOUND = 10004;
+
+    /*
+     * 参数不正确
+     */
+    const EXCEPTION_PARAMS_ERROR = 10005;
 }
