@@ -1,14 +1,10 @@
 <?php
 
-// tests/RedisLockTest.php
-
 namespace Kaadon\test;
 
 use Kaadon\Lock\base\LockConst;
 use Kaadon\Lock\Redis;
 use PHPUnit\Framework\TestCase;
-use Kaadon\Lock\base\KaadonLockException;
-
 class RedisLockTest extends TestCase
 {
     protected Redis $redisLock;

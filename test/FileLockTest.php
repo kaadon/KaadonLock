@@ -2,9 +2,6 @@
 
 namespace Kaadon\test;
 
-
-namespace Kaadon\test;
-
 use Kaadon\Lock\base\LockConst;
 use Kaadon\Lock\File;
 use PHPUnit\Framework\TestCase;
