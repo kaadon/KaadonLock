@@ -9,7 +9,9 @@
     "homepage": "http://developer.kaadon.com/",
     "license": "Apache-2.0",
     "require": {
-        "PHP": ">=7.1"
+        "PHP": ">=7.4",
+        "ext-redis": "*",
+        "ext-json": "*"
     },
     "authors": [
         {
