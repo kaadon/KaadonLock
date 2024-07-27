@@ -59,9 +59,7 @@ abstract class BaseLock
      */
     public function lock(?callable $callback = null, ?callable $concurrentCallback = null): int
     {
-        if ($this->isLocked) {
-            throw new KaadonLockException('已经加锁', LockConst::EXCEPTION_ALREADY_LOCKED);
-        }
+        if ($this->isLocked) return LockConst::EXCEPTION_ALREADY_LOCKED;
         if ($this->__lock()) {
             $this->isLocked = true;
             if (null === $concurrentCallback) {
