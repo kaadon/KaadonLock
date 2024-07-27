@@ -6,94 +6,83 @@ use Kaadon\Lock\base\KaadonLockException as Exception;
 use Kaadon\Lock\base\BaseLock;
 use Kaadon\Lock\base\LockConst;
 
-/**
- * RedisLock
- */
-class Redis extends BaseLock
+class MemcachedLock extends BaseLock
 {
     /**
      * 等待锁超时时间，单位：毫秒，0为不限制
      * @var int
      */
     public int $waitTimeout;
+
     /**
      * 获得锁每次尝试间隔，单位：毫秒
      * @var int
      */
     public int $waitSleepTime;
+
     /**
      * 锁超时时间，单位：秒
      * @var int
      */
     public int $lockExpire;
+
     /**
-     * Redis操作对象
+     * Memcached操作对象
+     * @var ?\Memcached
      */
-    public ?\Redis $handler;
-    /**
-     * @var string
-     */
+    public ?\Memcached $handler;
+
     public string $guid;
-    /**
-     * @var array|null
-     */
+
     public ?array $lockValue;
 
     /**
      * 构造方法
      * @param string $name 锁名称
-     * @param array|\Redis $params 连接参数
+     * @param mixed $params 连接参数
      * @param integer $waitTimeout 获得锁等待超时时间，单位：毫秒，0为不限制
      * @param integer $waitSleepTime 获得锁每次尝试间隔，单位：毫秒
      * @param integer $lockExpire 锁超时时间，单位：秒
      * @throws \Kaadon\Lock\base\KaadonLockException
-     * @throws \RedisException
      */
-    public function __construct(string $name, $params, int $lockExpire = 3, int $waitTimeout = 0, int $waitSleepTime = 1)
+    public function __construct(string $name, $params, int $waitTimeout = 0, int $waitSleepTime = 1, int $lockExpire = 3)
     {
         parent::__construct($name, $params);
-        if (!class_exists('\Redis')) {
-            throw new Exception('未找到 Redis 扩展', LockConst::EXCEPTION_EXTENSIONS_NOT_FOUND);
+        if (!class_exists('\Memcached')) {
+            throw new Exception('未找到 MemcachedLock 扩展', LockConst::EXCEPTION_EXTENSIONS_NOT_FOUND);
         }
         $this->waitTimeout = $waitTimeout;
         $this->waitSleepTime = $waitSleepTime;
         $this->lockExpire = $lockExpire;
-        if ($params instanceof \Redis) {
+        if ($params instanceof \Memcached) {
             $this->handler = $params;
             $this->isInHandler = true;
         } else {
             $host = $params['host'] ?? '127.0.0.1';
-            $port = $params['port'] ?? 6379;
-            $timeout = $params['timeout'] ?? 0;
-            $pconnect = $params['pconnect'] ?? false;
-            $prefix = $params['prefix'] ?? '';
-            $this->handler = new \Redis;
-            if ($pconnect) {
-                $result = $this->handler->pconnect($host, $port, $timeout);
-            } else {
-                $result = $this->handler->connect($host, $port, $timeout);
+            $port = $params['port'] ?? 11211;
+            $this->handler = new \Memcached;
+            $this->handler->setOption(\Memcached::OPT_BINARY_PROTOCOL, true);
+            if (!empty($params['options'])) {
+                $this->handler->setOptions($params['options']);
             }
+            $result = $this->handler->addServer($host, $port);
             if (!$result) {
-                throw new Exception('Redis连接失败');
+                throw new Exception('Memcached连接失败');
             }
-            // 密码验证
-            if (isset($params['password']) && !$this->handler->auth($params['password'])) {
-                throw new Exception('Redis密码验证失败');
+            if (isset($params['username'], $params['password'])) {
+                $this->handler->setSaslAuthData($params['username'], $params['password']);
+                // Verify the connection by performing a simple operation
+                if ($this->handler->getLastErrorCode() !== 0) {
+                    throw new Exception('Memcached用户名密码验证失败');
+                }
             }
-            // 选择库
-            if (isset($params['select'])) {
-                $this->handler->select($params['select']);
-            }
-            // 设置前缀
-            $this->handler->setOption(\Redis::OPT_PREFIX, $prefix);
         }
-        $this->guid = uniqid('KaadonLock', true);
+        $this->guid = uniqid('', true);
     }
 
     /**
      * 加锁
      * @return bool
-     * @throws \RedisException
      */
     protected function __lock(): bool
     {
@@ -101,24 +90,22 @@ class Redis extends BaseLock
         $sleepTime = $this->waitSleepTime * 1000;
         $waitTimeout = $this->waitTimeout / 1000;
         while (true) {
-            $value = json_decode($this->handler->get($this->name), true);
-            $this->lockValue = [
+            $value = $this->handler->get($this->name);
+            $this->lockValue = array(
                 'expire' => time() + $this->lockExpire,
                 'guid' => $this->guid,
-            ];
-            if (is_null($value)) {
+            );
+            if (false === $value) {
                 // 无值
-                $result = $this->handler->setnx($this->name, json_encode($this->lockValue));
+                $result = $this->handler->add($this->name, $this->lockValue, $this->lockExpire);
                 if ($result) {
-                    $this->handler->expire($this->name, $this->lockExpire);
                     return true;
                 }
             } else {
                 // 有值
                 if ($value['expire'] < time()) {
-                    $result = json_decode($this->handler->getSet($this->name, json_encode($this->lockValue)), true);
-                    if ($result === $value) {
-                        $this->handler->expire($this->name, $this->lockExpire);
+                    $result = $this->handler->add($this->name, $this->lockValue, $this->lockExpire);
+                    if ($result) {
                         return true;
                     }
                 }
@@ -135,12 +122,11 @@ class Redis extends BaseLock
     /**
      * 释放锁
      * @return bool
-     * @throws \RedisException
      */
     protected function __unlock(): bool
     {
         if ((isset($this->lockValue['expire']) && $this->lockValue['expire'] > time())) {
-            return $this->handler->del($this->name) > 0;
+            return $this->handler->delete($this->name) > 0;
         } else {
             return true;
         }
@@ -149,26 +135,25 @@ class Redis extends BaseLock
     /**
      * 不阻塞加锁
      * @return bool
-     * @throws \RedisException
      */
     protected function __unblockLock(): bool
     {
-        $value = json_decode($this->handler->get($this->name), true);
+        $value = $this->handler->get($this->name);
         $this->lockValue = array(
             'expire' => time() + $this->lockExpire,
             'guid' => $this->guid,
         );
-        if (null === $value) {
+        if (false === $value) {
             // 无值
-            $result = $this->handler->setnx($this->name, json_encode($this->lockValue));
+            $result = $this->handler->add($this->name, $this->lockValue, $this->lockExpire);
             if (!$result) {
                 return false;
             }
         } else {
             // 有值
             if ($value < time()) {
-                $result = json_decode($this->handler->getSet($this->name, json_encode($this->lockValue)), true);
-                if ($result !== $value) {
+                $result = $this->handler->add($this->name, $this->lockValue, $this->lockExpire);
+                if (!$result) {
                     return false;
                 }
             }
@@ -179,14 +164,12 @@ class Redis extends BaseLock
     /**
      * 关闭锁对象
      * @return bool
-     * @throws \RedisException
      */
     protected function __close(): bool
     {
-        if (is_null($this->handler)) return true;
-        $result = $this->handler->close();
+        if (null !== $this->handler) return true;
+        $result = $this->handler->quit();
         $this->handler = null;
         return $result;
-
     }
 }

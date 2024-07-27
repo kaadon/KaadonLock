@@ -3,11 +3,11 @@
 namespace Kaadon\test;
 
 use Kaadon\Lock\base\LockConst;
-use Kaadon\Lock\Redis;
+use Kaadon\Lock\RedisLock;
 use PHPUnit\Framework\TestCase;
 class RedisLockTest extends TestCase
 {
-    protected Redis $redisLock;
+    protected RedisLock $redisLock;
     protected array $params;
 
     /**
@@ -17,14 +17,14 @@ class RedisLockTest extends TestCase
     protected function setUp(): void
     {
         $this->params = [
-            'host' => '10.99.99.99',
+            'host' => '127.0.0.1',
             'port' => 6379,
             'timeout' => 0,
             'pconnect' => false,
             'prefix' => 'test:',
             'password' => '123456'
         ];
-        $this->redisLock = new Redis('test_lock', $this->params);
+        $this->redisLock = new RedisLock('test_lock', $this->params,5);
     }
 
     public function testSuccessfulConnection()

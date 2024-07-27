@@ -7,7 +7,7 @@ use Kaadon\Lock\base\BaseLock;
 use Kaadon\Lock\base\LockConst;
 use function is_resource;
 
-class File extends BaseLock
+class FileLock extends BaseLock
 {
     private $fp;
 

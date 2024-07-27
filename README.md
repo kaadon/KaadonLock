@@ -65,7 +65,7 @@ else
 
 ```php
 <?php
-$lock = new \Yurun\Until\Lock\Redis(	// 可以把Redis替换成Memcache/Memcached，下面代码用法相同
+$lock = new \Yurun\Until\Lock\Redis(	// 可以把Redis替换成Memcache/MemcachedLock，下面代码用法相同
 	'我是锁名称',
 	array(
 		'host'		=>	'127.0.0.1',

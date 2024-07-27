@@ -3,18 +3,18 @@
 namespace Kaadon\test;
 
 use Kaadon\Lock\base\LockConst;
-use Kaadon\Lock\File;
+use Kaadon\Lock\FileLock;
 use PHPUnit\Framework\TestCase;
 
 class FileLockTest extends TestCase
 {
-    protected File $fileLock;
+    protected FileLock $fileLock;
     protected string $lockFilePath;
 
     protected function setUp(): void
     {
         $this->lockFilePath = sys_get_temp_dir() . '/test.lock';
-        $this->fileLock = new File('test', sys_get_temp_dir());
+        $this->fileLock = new FileLock('test', sys_get_temp_dir());
     }
 
     protected function tearDown(): void
